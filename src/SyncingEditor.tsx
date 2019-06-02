@@ -25,6 +25,7 @@ export const SyncingEditor: React.FC<Props> = () => {
     }, []);
 
     return <Editor
+        ref={editor}
         style={{
             backgroundColor: 'whitesmoke',
             maxWidth: 800,
@@ -46,7 +47,7 @@ export const SyncingEditor: React.FC<Props> = () => {
                     })
                 .toJS()
                 .map((o: any) => ({...o, data: { source: 'one' } }));
-            if (ops.length && remote.current) {
+            if (ops.length && !remote.current) {
                 emitter.emit(id.current, ops)
             }
         }}
