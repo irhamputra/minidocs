@@ -1,12 +1,13 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Editor} from "slate-react";
-import Mitt from 'mitt';
 import {initialValue} from "./slateInitialValue";
 import {Operation} from "slate";
+import io from 'socket.io-client';
 
-interface Props {}
+const socket = io('http://localhost:4000');
 
-const emitter = new Mitt();
+interface Props {
+}
 
 export const SyncingEditor: React.FC<Props> = () => {
     const [value, setValue] = useState(initialValue);
@@ -15,10 +16,10 @@ export const SyncingEditor: React.FC<Props> = () => {
     const remote = useRef(false);
 
     useEffect(() => {
-        (emitter as any).on('*', (type: string, ops: Operation[]) => {
-            if (id.current !== type){
+        socket.on('new-remote-operations', ({editorId, ops}: { editorId: string, ops: string }) => {
+            if (id.current !== editorId) {
                 remote.current = true;
-                ops.forEach(op => editor.current!.applyOperation(op));
+                JSON.parse(ops).forEach((op: any) => editor.current!.applyOperation(op));
                 remote.current = false;
             }
         })
@@ -36,19 +37,19 @@ export const SyncingEditor: React.FC<Props> = () => {
             setValue(opts.value);
             const ops = opts.operations
                 .filter(o => {
-                        if (o) {
-                            return (
-                                o.type !== 'set_selection' &&
-                                o.type !== 'set_value' &&
-                                (!o.data || !o.data.has('source'))
-                            )
-                        }
-                        return false
-                    })
+                    if (o) {
+                        return (
+                            o.type !== 'set_selection' &&
+                            o.type !== 'set_value' &&
+                            (!o.data || !o.data.has('source'))
+                        )
+                    }
+                    return false
+                })
                 .toJS()
-                .map((o: any) => ({...o, data: { source: 'one' } }));
+                .map((o: any) => ({...o, data: {source: 'one'}}));
             if (ops.length && !remote.current) {
-                emitter.emit(id.current, ops)
+                socket.emit('new-operations', {editorId: id.current, ops: JSON.stringify(ops)})
             }
         }}
     />
