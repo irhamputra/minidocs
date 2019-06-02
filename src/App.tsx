@@ -8,9 +8,9 @@ const App = () => {
             <BrowserRouter>
                 <Route path="/"
                        exact
-                       render={() => <Redirect to={`/groups/${Date.now()}`}/>}
+                       render={() => <Redirect to={`/group/${Date.now()}`}/>}
                 />
-                <Route path="/groups/:id" component={GroupEditor}/>
+                <Route path="/group/:id" component={GroupEditor}/>
             </BrowserRouter>
         </>
     )

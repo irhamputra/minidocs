@@ -34,7 +34,7 @@ app.use(cors({
 		origin: 'http://localhost:3000' // change this to your frontend
 }));
 
-app.get('/groups/:id', (req, res) => {
+app.get('/group/:id', (req, res) => {
 		const {id} = req.params;
 		if (!(id in groupData)) {
 				groupData[id] = initialEditorValue
