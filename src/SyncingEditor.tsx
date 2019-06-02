@@ -37,37 +37,60 @@ export const SyncingEditor: React.FC<Props> = ({groupId}) => {
         }
     }, []);
 
-    return <Editor
-        ref={editor}
-        style={{
-            backgroundColor: 'whitesmoke',
-            maxWidth: 800,
-            minHeight: 150
-        }}
-        value={value}
-        onChange={opts => {
-            setValue(opts.value);
-            const ops = opts.operations
-                .filter(o => {
-                    if (o) {
-                        return (
-                            o.type !== 'set_selection' &&
-                            o.type !== 'set_value' &&
-                            (!o.data || !o.data.has('source'))
-                        )
-                    }
-                    return false
-                })
-                .toJS()
-                .map((o: any) => ({...o, data: {source: 'one'}}));
-            if (ops.length && !remote.current) {
-                socket.emit('new-operations', {
-                    editorId: id.current,
-                    ops,
-                    value: opts.value.toJSON(),
-                    groupId
-                })
-            }
-        }}
-    />
+    return <>
+        <button onMouseDown={(e) => {
+            e.preventDefault();
+            editor.current!.toggleMark('bold')
+        }}>
+            Bold
+        </button>
+        <button onMouseDown={(e) => {
+            e.preventDefault();
+            editor.current!.toggleMark('italic')
+        }}>
+            Italic
+        </button>
+        <Editor
+            ref={editor}
+            style={{
+                backgroundColor: 'whitesmoke',
+                maxWidth: 800,
+                minHeight: 150
+            }}
+            value={value}
+            renderMark={(props, editor, next) => {
+                if (props.mark.type === 'bold') {
+                    return <strong>{props.children}</strong>
+                } else if(props.mark.type === 'italic'){
+                    return <em>{props.children}</em>
+                }
+
+                return next()
+            }}
+            onChange={opts => {
+                setValue(opts.value);
+                const ops = opts.operations
+                    .filter(o => {
+                        if (o) {
+                            return (
+                                o.type !== 'set_selection' &&
+                                o.type !== 'set_value' &&
+                                (!o.data || !o.data.has('source'))
+                            )
+                        }
+                        return false
+                    })
+                    .toJS()
+                    .map((o: any) => ({...o, data: {source: 'one'}}));
+                if (ops.length && !remote.current) {
+                    socket.emit('new-operations', {
+                        editorId: id.current,
+                        ops,
+                        value: opts.value.toJSON(),
+                        groupId
+                    })
+                }
+            }}
+        />
+    </>
 };
