@@ -1,11 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Editor} from "slate-react";
-import {initialValue} from "./slateInitialValue";
 import io from 'socket.io-client';
 import {Operation, Value} from "slate";
 import styled from "styled-components";
 import Icon from '@material-ui/core/Icon';
 import {Link} from "react-router-dom";
+
+import {initialValue} from "../constant/slateInitialValue";
 
 const socket = io('http://localhost:4000');
 
@@ -65,6 +66,7 @@ export const SyncingEditor: React.FC<Props> = ({groupId}) => {
 
     return <>
         <EditorWrapper>
+            <h2>New document</h2>
             <Toolbar>
                 <StyledButton onMouseDown={(e) => {
                     e.preventDefault();

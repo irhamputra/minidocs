@@ -1,5 +1,5 @@
 import React from 'react';
-import {SyncingEditor} from "../SyncingEditor";
+import {SyncingEditor} from "./SyncingEditor";
 import {RouteComponentProps} from "react-router-dom";
 import {Header} from "./Header";
 import {Footer} from "./Footer";
