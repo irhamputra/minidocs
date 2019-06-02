@@ -3,8 +3,27 @@ import {Editor} from "slate-react";
 import {initialValue} from "./slateInitialValue";
 import io from 'socket.io-client';
 import {Operation, Value} from "slate";
+import styled from "styled-components";
+import Icon from '@material-ui/core/Icon';
+import {Link} from "react-router-dom";
 
 const socket = io('http://localhost:4000');
+
+const EditorWrapper = styled.div`
+  margin: 0 120px
+`;
+
+const Toolbar = styled.div`
+  padding: 12px;
+  margin-bottom: 3px;
+  background-color: white;
+`;
+
+const StyledButton = styled.button`
+  padding: 7px;
+  border: none;
+  cursor: pointer;
+`;
 
 interface Props {
     groupId: string
@@ -20,7 +39,7 @@ export const SyncingEditor: React.FC<Props> = ({groupId}) => {
         fetch(`http://localhost:4000/group/${groupId}`)
             .then(x => x.json()
                 .then(data => {
-                    setValue(Value.fromJSON(data))
+                    setValue(Value.fromJSON(data));
                 })
             );
         const eventName = `new-remote-operations-${groupId}`;
@@ -29,6 +48,9 @@ export const SyncingEditor: React.FC<Props> = ({groupId}) => {
                 remote.current = true;
                 ops.forEach((op: any) => editor.current!.applyOperation(op));
                 remote.current = false;
+                setTimeout(() => {
+                    console.log('Saved')
+                },2000)
             }
         });
 
@@ -38,59 +60,82 @@ export const SyncingEditor: React.FC<Props> = ({groupId}) => {
     }, []);
 
     return <>
-        <button onMouseDown={(e) => {
-            e.preventDefault();
-            editor.current!.toggleMark('bold')
-        }}>
-            Bold
-        </button>
-        <button onMouseDown={(e) => {
-            e.preventDefault();
-            editor.current!.toggleMark('italic')
-        }}>
-            Italic
-        </button>
-        <Editor
-            ref={editor}
-            style={{
-                backgroundColor: 'whitesmoke',
-                maxWidth: 800,
-                minHeight: 150
-            }}
-            value={value}
-            renderMark={(props, editor, next) => {
-                if (props.mark.type === 'bold') {
-                    return <strong>{props.children}</strong>
-                } else if(props.mark.type === 'italic'){
-                    return <em>{props.children}</em>
-                }
+        <EditorWrapper>
+            <Toolbar>
+                <StyledButton onMouseDown={(e) => {
+                    e.preventDefault();
+                    editor.current!.toggleMark('bold')
+                }}>
+                    <Icon>format_bold</Icon>
+                </StyledButton>
+                <StyledButton onMouseDown={(e) => {
+                    e.preventDefault();
+                    editor.current!.toggleMark('italic')
+                }}>
+                    <Icon>format_italic</Icon>
+                </StyledButton>
+                <StyledButton onMouseDown={(e) => {
+                    e.preventDefault();
+                    editor.current!.toggleMark('underline')
+                }}>
+                    <Icon>format_underline</Icon>
+                </StyledButton>
+                <StyledButton onMouseDown={(e) => {
+                    e.preventDefault();
+                    editor.current!.toggleMark('link')
+                }}>
+                    <Icon>insert_link</Icon>
+                </StyledButton>
+            </Toolbar>
 
-                return next()
-            }}
-            onChange={opts => {
-                setValue(opts.value);
-                const ops = opts.operations
-                    .filter(o => {
-                        if (o) {
-                            return (
-                                o.type !== 'set_selection' &&
-                                o.type !== 'set_value' &&
-                                (!o.data || !o.data.has('source'))
-                            )
-                        }
-                        return false
-                    })
-                    .toJS()
-                    .map((o: any) => ({...o, data: {source: 'one'}}));
-                if (ops.length && !remote.current) {
-                    socket.emit('new-operations', {
-                        editorId: id.current,
-                        ops,
-                        value: opts.value.toJSON(),
-                        groupId
-                    })
-                }
-            }}
-        />
+            <Editor
+                ref={editor}
+                style={{
+                    backgroundColor: 'white',
+                    maxWidth: '100%',
+                    minHeight: 150,
+                    boxShadow: '0 10px 6px -6px lightgray',
+                    padding: 20
+                }}
+                value={value}
+                renderMark={(props, editor, next) => {
+                    if (props.mark.type === 'bold') {
+                        return <strong>{props.children}</strong>
+                    } else if (props.mark.type === 'italic') {
+                        return <em>{props.children}</em>
+                    } else if (props.mark.type === 'underline') {
+                        return <u>{props.children}</u>
+                    } else if (props.mark.type === 'link') {
+                        return <Link to={`${props.children}`} target="_blank">{props.children}</Link>
+                    }
+
+                    return next()
+                }}
+                onChange={opts => {
+                    setValue(opts.value);
+                    const ops = opts.operations
+                        .filter(o => {
+                            if (o) {
+                                return (
+                                    o.type !== 'set_selection' &&
+                                    o.type !== 'set_value' &&
+                                    (!o.data || !o.data.has('source'))
+                                )
+                            }
+                            return false
+                        })
+                        .toJS()
+                        .map((o: any) => ({...o, data: {source: 'one'}}));
+                    if (ops.length && !remote.current) {
+                        socket.emit('new-operations', {
+                            editorId: id.current,
+                            ops,
+                            value: opts.value.toJSON(),
+                            groupId
+                        });
+                    }
+                }}
+            />
+        </EditorWrapper>
     </>
 };

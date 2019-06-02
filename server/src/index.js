@@ -13,7 +13,7 @@ const initialEditorValue = {
 								nodes: [
 										{
 												object: 'text',
-												text: 'A line of text in a paragraph.'
+												text: 'Hello'
 										},
 								],
 						},
