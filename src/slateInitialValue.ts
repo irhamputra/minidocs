@@ -9,7 +9,7 @@ export const initialValue = Value.fromJSON({
                 nodes: [
                     {
                         object: 'text',
-                        text: 'Hello world'
+                        text: 'A line of text in a paragraph.'
                     }
                 ],
             },

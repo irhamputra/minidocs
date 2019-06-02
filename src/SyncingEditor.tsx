@@ -14,15 +14,19 @@ const EditorWrapper = styled.div`
 `;
 
 const Toolbar = styled.div`
-  padding: 12px;
+  padding: 10px;
   margin-bottom: 3px;
   background-color: white;
 `;
 
 const StyledButton = styled.button`
-  padding: 7px;
+  padding: 5px 5px 0 5px;
   border: none;
+  color: gray;
   cursor: pointer;
+  &:hover {
+    color: black;
+  }
 `;
 
 interface Props {
